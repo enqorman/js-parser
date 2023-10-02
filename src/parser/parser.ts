@@ -27,7 +27,7 @@ import Lexer from "../lexer/lexer";
 
 export default class Parser {
     private tokens: Token[];
-    private previous: Token;
+    private previous?: Token;
     private cursor: number;
     constructor(lexer: Token[] | Lexer) {
         if (lexer instanceof Lexer) {
@@ -197,10 +197,8 @@ export default class Parser {
         const body: Statement[] = [];
         while (!this.is_eof() && this.current()!.type != TokenType.CloseBracket) {
             const statement = this.parse_statement();
-            if (!statement) {
-                console.error("[Parser::parse_block_statement] Failed to parse statement");
+            if (!statement) 
                 return null;
-            }
             body.push(statement);
             console.log(statement)
         }
@@ -358,6 +356,8 @@ export default class Parser {
         return new AssignmentExpression(left, right, equals.location);
     }
 
+    private BINARY_TYPES: TokenType[] = [TokenType.Plus, TokenType.Dash, TokenType.Percent, TokenType.Dash];
+
     private parse_expression(): Expression | null {
         let current;
         try {
@@ -367,31 +367,35 @@ export default class Parser {
             return null;
         }
 
-        if (current.type == TokenType.Plus || current.type == TokenType.Dash || current.type == TokenType.Percent || current.type == TokenType.Dash) {
+        if (this.BINARY_TYPES.includes(current!.type)) {
             console.error("[Parser::parse_expression] TODO: unary expr");
             return null;
         }
 
-        if (current.type == TokenType.Identifier || 
-            current.type == TokenType.Number || 
-            current.type == TokenType.String ||
-            (current.type == TokenType.Keyword && current.data == "true" || current.data == "false" || current.data == "null")) {
+        if (current!.type == TokenType.Identifier || 
+            current!.type == TokenType.Number || 
+            current!.type == TokenType.String ||
+            (current!.type == TokenType.Keyword && current!.data == "true" || current!.data == "false" || current!.data == "null")) {
             let ret: Identifier | Literal;
             const it = this.consume()!;
-            if (current.type == TokenType.Identifier)
+            if (current!.type == TokenType.Identifier)
                 ret = new Identifier(it.data as string, current!.location);
             else
                 ret = new Literal(it.data, it.raw, current!.location);
             if (this.is_eof())
                 return ret;
             current = this.current();
-            if (current.type == TokenType.Period)
+            if (current!.type == TokenType.Period)
                 return this.parse_member_expression(ret);
-            else if (current.type == TokenType.Equal)
+            else if (current!.type == TokenType.Equal)
                 return this.parse_assignment_expression(ret);
-            else if (current.type == TokenType.OpenParen)
+            else if (current!.type == TokenType.OpenParen)
                 return this.parse_call_expression(ret);
-            else if (current.type == TokenType.Plus || current.type == TokenType.Dash || current.type == TokenType.Percent || current.type == TokenType.Dash) {
+            else if (current!.type == TokenType.Colon) {
+                console.error("[Parser::parse_expression] TODO: uhh i forgot the name of expr but its like not json yknow");
+                return null;
+            }
+            else if (this.BINARY_TYPES.includes(current!.type)) {
                 console.error("[Parser::parse_expression] TODO: binary expr");
                 return null;
             }
@@ -399,7 +403,7 @@ export default class Parser {
         }  
 
         // Array Expression
-        else if (current.type == TokenType.OpenSquareBracket) {
+        else if (current!.type == TokenType.OpenSquareBracket) {
             return this.parse_array_expression();
         }
 
@@ -409,10 +413,8 @@ export default class Parser {
 
     private parse_expression_statement(): ExpressionStatement | null {
         const expression = this.parse_expression();
-        if (!expression) {
-            console.error("[Parser::parse_expression_statement] Failed to parse expression");
+        if (!expression) 
             return null;
-        }
         return new ExpressionStatement(expression, expression.location);
     }
 

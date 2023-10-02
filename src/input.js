@@ -1,1 +1,3 @@
-x.d = 3;
+function x() {
+    
+}
