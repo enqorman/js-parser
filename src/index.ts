@@ -81,6 +81,21 @@ async function main_deno(inputFile: string | null, args: ArgumentsParser) {
     console.error("[index.ts::main_deno] TODO: Deno stuff")
 }
 
+async function main_node(inputFile: string | null, args: ArgumentsParser) {
+    const useRepl = !!args.get("repl");
+
+    // NODEJS
+    if (useRepl) 
+        return console.error("[index.ts] TODO: repl using npm");
+
+    if (inputFile) {
+        const fs = await import("fs");
+        const source = fs.readFileSync(inputFile, "utf-8");
+        run(inputFile, source, args);
+    } else
+        console.error("[index.ts::main] No input file was provided.")
+}
+
 async function main() {
     console.clear();
 
@@ -122,18 +137,8 @@ async function main() {
     else if ('Deno' in globalThis)
         return main_deno(inputFile, args);
 
-    else { // NODE
-        const useRepl = !!args.get("repl");
-
-        // NODEJS
-        if (useRepl) 
-            return console.error("[index.ts] TODO: repl using npm");
-
-        if (inputFile) {
-            console.error('TODO: node support')
-        } else
-            console.error("[index.ts::main] No input file was provided.")
-    }
+    else 
+        main_node(inputFile, args); // assume node
 }
 
 main();

@@ -1,3 +1,1 @@
-function x() {
-    
-}
+true;

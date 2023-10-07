@@ -3,18 +3,6 @@
 
 import { TokenLocation } from "../lexer/Token";
 
-// Literal
-export class Identifier {
-    public readonly type = "Identifier";
-    constructor(public readonly name: string, public readonly location: TokenLocation) {}
-}
-
-export class Literal {
-    public readonly type = "Literal";
-    constructor(public readonly value: string | number | null, public readonly raw: string, public readonly location: TokenLocation) {}
-}
-
-
 // Statements
 export class Statement {
     public readonly type: string = "Statement";
@@ -37,14 +25,14 @@ export class DebuggerStatement extends Statement {
 
 export class IfStatement extends Statement  {
     public override readonly type = "IfStatement";
-    constructor(public readonly test: Expression | Identifier | Literal, public readonly body: Statement, public readonly location: TokenLocation) {
+    constructor(public readonly test: Expression, public readonly body: Statement, public readonly location: TokenLocation) {
         super(location);
     }
 }
 
 export class WhileStatement extends Statement  {
     public override readonly type = "WhileStatement";
-    constructor(public readonly test: Expression | Identifier | Literal, public readonly body: Statement, public readonly location: TokenLocation) {
+    constructor(public readonly test: Expression, public readonly body: Statement, public readonly location: TokenLocation) {
         super(location);
     }
 }
@@ -58,7 +46,7 @@ export class BlockStatement extends Statement {
 
 export class ExpressionStatement extends Statement {
     public override readonly type = "ExpressionStatement";
-    constructor(public readonly expression: Expression | Identifier | Literal, public readonly location: TokenLocation) {
+    constructor(public readonly expression: Expression, public readonly location: TokenLocation) {
         super(location);
     }
 }
@@ -77,7 +65,7 @@ export class FunctionDeclarationStatement extends Statement {
 // Variables
 export class VariableDeclarator {
     public readonly type = "VariableDeclarator";
-    constructor(public readonly id: Identifier, public readonly init: Expression | Identifier | Literal | null) {}
+    constructor(public readonly id: Identifier, public readonly init: Expression | null) {}
 }
 
 export class VariableDeclarationStatement extends Statement {
@@ -98,7 +86,7 @@ export class ArrayStatement extends Statement {
 
 export class ReturnStatement extends Statement {
     public override readonly type = "ReturnStatement";
-    constructor(public readonly argument: Expression | Identifier | Literal | null, public readonly location: TokenLocation) {
+    constructor(public readonly argument: Expression | null, public readonly location: TokenLocation) {
         super(location);
     }
 }
@@ -109,20 +97,34 @@ export class Expression {
     constructor(public readonly location: TokenLocation) {}
 }
 
+export class Identifier extends Expression {
+    public readonly type = "Identifier";
+    constructor(public readonly name: string, public readonly location: TokenLocation) {
+        super(location);
+    }
+}
+
+export class Literal extends Expression {
+    public readonly type = "Literal";
+    constructor(public readonly value: string | number | null, public readonly raw: string, public readonly location: TokenLocation) {
+        super(location);
+    }
+}
+
 export class ChainExpression extends Expression {
     public readonly type: string = "ChainExpression";
 }
 
 export class MemberExpression extends Expression {
     public readonly type: string = "MemberExpression";
-    constructor(public readonly object: Identifier | MemberExpression, public readonly property: Expression | Identifier | Literal, public readonly computed: boolean, public readonly optional: boolean, public readonly location: TokenLocation) {
+    constructor(public readonly object: Identifier | MemberExpression, public readonly property: Expression, public readonly computed: boolean, public readonly optional: boolean, public readonly location: TokenLocation) {
         super(location);
     }
 }
 
 export class AssignmentExpression extends Expression {
     public readonly type: string = "AssignmentExpression";
-    constructor(public readonly left: Identifier | Expression, public readonly right: Expression | Identifier | Literal, public readonly location: TokenLocation) {
+    constructor(public readonly left: Identifier | Expression, public readonly right: Expression, public readonly location: TokenLocation) {
         super(location);
     }
 }

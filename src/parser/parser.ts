@@ -54,10 +54,9 @@ export default class Parser {
     }
 
     private peek(): Token {
-        this.cursor++;
-        if (this.is_eof())
+        if (this.cursor + 1 >= this.tokens.length)
             throw new Error("[Parser] EOF hit which is unexpected");
-        return this.tokens[this.cursor--];
+        return this.tokens[this.cursor + 1];
     }
 
     private try_consume(type: TokenType, data?: string): boolean | null {
@@ -180,8 +179,9 @@ export default class Parser {
             return null;
         }
         if (!this.try_consume(TokenType.Number) || 
-            (this.current()!.type != TokenType.Identifier && current.data != "true" && current.data != "false" && current.data != "null")) {
-            console.error(`[Parser::parse_literal] Expected either number, identifier, or keyword but got '${current.type}'`);
+            (this.current()!.type != TokenType.Identifier && 
+            (typeof current.data == "string" && current.data != "true" && current.data != "false" && current.data != "null"))) {
+            console.error(`[Parser::parse_literal] Expected either number or identifier but got '${current.type}'`);
             return null;
         }
         return new Literal(current.data, current.raw, current.location);
@@ -359,43 +359,46 @@ export default class Parser {
     private BINARY_TYPES: TokenType[] = [TokenType.Plus, TokenType.Dash, TokenType.Percent, TokenType.Dash];
 
     private parse_expression(): Expression | null {
-        let current;
-        try {
-            current = this.current()
-        } catch(e) {
-            console.error("[Parser::parse_expression] Failed to get current token.");
+        if (this.is_eof()) 
             return null;
-        }
+
+        let current = this.current();
+        let type = current!.type;
+        let data = current!.data;
 
         if (this.BINARY_TYPES.includes(current!.type)) {
             console.error("[Parser::parse_expression] TODO: unary expr");
             return null;
         }
 
-        if (current!.type == TokenType.Identifier || 
-            current!.type == TokenType.Number || 
-            current!.type == TokenType.String ||
-            (current!.type == TokenType.Keyword && current!.data == "true" || current!.data == "false" || current!.data == "null")) {
+        if (type == TokenType.Identifier || 
+            type == TokenType.Number || 
+            type == TokenType.String) {
             let ret: Identifier | Literal;
             const it = this.consume()!;
-            if (current!.type == TokenType.Identifier)
+            if (current!.type == TokenType.Identifier && 
+                (typeof data == "string" && (data != "true" && data != "false" && data != "null")))
                 ret = new Identifier(it.data as string, current!.location);
             else
                 ret = new Literal(it.data, it.raw, current!.location);
-            if (this.is_eof())
-                return ret;
+            if (this.is_eof()) {
+                console.error("this might be error?");
+                return null;
+            }
             current = this.current();
-            if (current!.type == TokenType.Period)
+            type = current!.type;
+            data = current!.data;
+            if (type == TokenType.Period)
                 return this.parse_member_expression(ret);
-            else if (current!.type == TokenType.Equal)
+            else if (type == TokenType.Equal)
                 return this.parse_assignment_expression(ret);
-            else if (current!.type == TokenType.OpenParen)
+            else if (type == TokenType.OpenParen)
                 return this.parse_call_expression(ret);
-            else if (current!.type == TokenType.Colon) {
+            else if (type == TokenType.Colon) {
                 console.error("[Parser::parse_expression] TODO: uhh i forgot the name of expr but its like not json yknow");
                 return null;
             }
-            else if (this.BINARY_TYPES.includes(current!.type)) {
+            else if (this.BINARY_TYPES.includes(type)) {
                 console.error("[Parser::parse_expression] TODO: binary expr");
                 return null;
             }
@@ -403,11 +406,11 @@ export default class Parser {
         }  
 
         // Array Expression
-        else if (current!.type == TokenType.OpenSquareBracket) {
+        else if (type == TokenType.OpenSquareBracket) {
             return this.parse_array_expression();
         }
 
-        console.error(`[Parser::parse_expression] Implement expr '${current?.type ?? "EOF"}'`);
+        console.error(`[Parser::parse_expression] Implement expr '${type}'`);
         return null;
     }
 
@@ -557,46 +560,47 @@ export default class Parser {
     }
 
     private parse_statement(): Statement | null {
-        const current = this.current();
-        if (!current)
+        if (this.is_eof())
             return null;
 
-        let ret;
-        if (current.type == TokenType.Keyword) {
-            if (current.data == "async" || current.data == "function") 
+        const current = this.current()!;
+        const type = current.type;
+        const data = current.data;
+        const location = current.location;
+
+        if (type == TokenType.Keyword) {
+            let ret;
+            if (data == "async" || data == "function") 
                 ret = this.parse_function_statement();
-            else if (current.data == "return") 
+            else if (data == "return") 
                 ret = this.parse_return_statement();
-            else if (current.data == "const" || current.data == "let" || current.data == "var") 
+            else if (data == "const" || data == "let" || data == "var") 
                 ret = this.parse_variable_declaration();
-            else if (current.data == "true" || current.data == "false" || current.data == "null")
-                ret = this.parse_literal();
-            else if (current.data == "if") 
+            else if (data == "if") 
                 ret = this.parse_if_statement();
-            else if (current.data == "while") 
+            else if (data == "while") 
                 ret = this.parse_while_statement();
-            else if (current.data == "debugger") {
+            else if (data == "debugger") {
                 this.consume(TokenType.Keyword);
-                ret = new DebuggerStatement(current.location);
+                ret = new DebuggerStatement(location);
             }
-            else if (current.data == "do" || current.data == "for") {
+            else if (data == "do" || data == "for") {
                 console.error("[Parser::parse_statement] TODO: do/for statements");
                 throw -11;
-                return null;
             }
             this.consume(TokenType.Semicolon);
             if (ret)
                 return ret;
-            console.error("[Parser::parse_statement] TODO: statement keyword for " + current.data);
+            console.error("[Parser::parse_statement] TODO: statement keyword for " + data);
             return null;
         } 
 
-        if (current.type == TokenType.OpenBracket)
+        else if (type == TokenType.OpenBracket)
             return this.parse_block_statement();
 
-        else if (current.type == TokenType.Semicolon) {
+        else if (type == TokenType.Semicolon) {
             this.consume(TokenType.Semicolon);
-            return new EmptyStatement(current.location);
+            return new EmptyStatement(location);
         }
 
         else if ([TokenType.Identifier,
@@ -608,12 +612,12 @@ export default class Parser {
             TokenType.Plus,
             TokenType.Dash,
             TokenType.Slash,
-            TokenType.Percent].includes(current.type)) {
+            TokenType.Percent].includes(type)) {
             this.consume(TokenType.Semicolon);
             return this.parse_expression_statement();
         }
 
-        console.error(`[Parser::parse_statement] TODO: statement other for ${current.type} -> ${current.data}`);
+        console.error(`[Parser::parse_statement] TODO: statement other for ${type} -> '${data}'`);
         return null;
     }
 

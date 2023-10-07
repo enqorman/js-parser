@@ -102,9 +102,8 @@ export default class Lexer {
         "let", "const", "var",
         "private", "public", "protected", "override",
         "interface", "class", "enum",
-        "true", "false",
         "if", "while", "do", "else", "catch",
-        "null", "debugger"
+        "debugger"
     ];
 
     public next_token(): Token | null {
