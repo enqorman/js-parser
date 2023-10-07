@@ -1,7 +1,9 @@
 // AST based on acorn using https://astexplorer.net/
 // with slight changes/alterations
 
-import { TokenLocation } from "../lexer/Token";
+// @ts-nocheck
+
+import { TokenLocation } from "../lexer/Token.ts";
 
 // Statements
 export class Statement {

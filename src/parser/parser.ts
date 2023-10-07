@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 import { 
     Identifier, 
     Statement, 
@@ -20,10 +22,10 @@ import {
     ArrayExpression,
     ArrayElement,
     FunctionDeclarationStatement
-} from "./Types"
-import Token from "../lexer/Token";
-import { TokenType } from "../lexer/Token";
-import Lexer from "../lexer/lexer";
+} from "./Types.ts"
+import Token from "../lexer/Token.ts";
+import { TokenType } from "../lexer/Token.ts";
+import Lexer from "../lexer/lexer.ts";
 
 export default class Parser {
     private tokens: Token[];

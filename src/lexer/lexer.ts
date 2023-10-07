@@ -1,6 +1,8 @@
-import Token from "./Token";
-import { TokenLocation, TokenType } from "./Token";
-import { is_alpha, is_numeric, is_space } from "../utils";
+// @ts-nocheck
+
+import Token from "./Token.ts";
+import { TokenLocation, TokenType } from "./Token.ts";
+import { is_alpha, is_numeric, is_space } from "../utils.ts";
 
 export default class Lexer {
     public readonly file_path: string | null;

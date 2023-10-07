@@ -1,10 +1,12 @@
 // AST based on acorn using https://astexplorer.net/
 // with slight changes/alterations
 
-import ArgumentsParser from "./args";
-import Lexer from "./lexer/lexer";
-import Parser from "./parser/parser";
-import Token from "./lexer/Token";
+// @ts-nocheck
+
+import ArgumentsParser from "./args.ts";
+import Lexer from "./lexer/lexer.ts";
+import Parser from "./parser/parser.ts";
+import Token from "./lexer/Token.ts";
 
 function run(file_path: string, src: string, args: ArgumentsParser) {
     const lexer = new Lexer(file_path, src);
@@ -78,7 +80,15 @@ async function main_deno(inputFile: string | null, args: ArgumentsParser) {
     if (!('Deno' in globalThis))
         return console.error("[index.ts::main_deno] Deno was not found in globalThis which is odd!")
 
-    console.error("[index.ts::main_deno] TODO: Deno stuff")
+    const Deno = (globalThis as any)['Deno']!;
+    
+    const useRepl = !!args.get("repl");
+    if (useRepl) {
+        return console.error("[index.ts::main_deno] TODO: repl")
+    }
+
+    const src = await Deno.readTextFile(inputFile);
+    run(inputFile, src, args)    
 }
 
 async function main_node(inputFile: string | null, args: ArgumentsParser) {
@@ -133,10 +143,8 @@ async function main() {
 
     if ('Bun' in globalThis)
         return main_bun(inputFile, args);
-
     else if ('Deno' in globalThis)
         return main_deno(inputFile, args);
-
     else 
         main_node(inputFile, args); // assume node
 }
