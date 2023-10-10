@@ -420,6 +420,7 @@ export default class Parser {
         const expression = this.parse_expression();
         if (!expression) 
             return null;
+        this.consume(TokenType.Semicolon);
         return new ExpressionStatement(expression, expression.location);
     }
 
@@ -615,7 +616,6 @@ export default class Parser {
             TokenType.Dash,
             TokenType.Slash,
             TokenType.Percent].includes(type)) {
-            this.consume(TokenType.Semicolon);
             return this.parse_expression_statement();
         }
 

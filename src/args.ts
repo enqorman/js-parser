@@ -45,7 +45,6 @@ export default class ArgumentsParser {
     parse(): boolean {
         while (this.argv.length > 0) {
             const arg = this.argv.shift()!.trim().toLowerCase();
-            console.log(arg);
             const arg_len = arg.length;
             if (arg[0] != '-') {
                 this.arguments.push(new Argument(null, arg));
@@ -62,7 +61,6 @@ export default class ArgumentsParser {
             const eqIndex = name.indexOf('=');
             if (eqIndex >= 0) {
                 throw "todo (argument with value)";
-                continue;
             }
             this.arguments.push(new Argument(name));
         }

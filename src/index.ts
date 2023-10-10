@@ -84,7 +84,7 @@ async function main_deno(inputFile: string | null, args: ArgumentsParser) {
     
     const useRepl = !!args.get("repl");
     if (useRepl) {
-        return console.error("[index.ts::main_deno] TODO: repl")
+        return console.error("[index.ts::main_deno] TODO: repl");
     }
 
     const src = await Deno.readTextFile(inputFile);
