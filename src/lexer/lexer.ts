@@ -1,7 +1,10 @@
-// @ts-nocheck
-
+// @ts-ignore: allowImportingTsExtensions
 import Token from "./Token.ts";
+
+// @ts-ignore: allowImportingTsExtensions
 import { TokenLocation, TokenType } from "./Token.ts";
+
+// @ts-ignore: allowImportingTsExtensions
 import { is_alpha, is_numeric, is_space } from "../utils.ts";
 
 export default class Lexer {
