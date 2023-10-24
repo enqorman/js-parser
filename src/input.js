@@ -1,8 +1,8 @@
-let x = 5;
+let x = 234;
 
 // CURRENTLY: no scopes so dont try any function arguments lol
-function xbc() {
+function xbc(x) {
     return x + 3;
 }
 
-xbc();
+xbc(12);

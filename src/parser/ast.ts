@@ -1,8 +1,14 @@
 // AST based on acorn using https://astexplorer.net/
 // with slight changes/alterations
 
-// @ts-ignore: allowImportingTsExtensions
-import { Interpreter, Value, _Function } from "../interpreter/interpreter.ts";
+import {
+	Interpreter,
+	Scope,
+	Value,
+	_Function,
+
+	// @ts-ignore: allowImportingTsExtensions
+} from "../interpreter/interpreter.ts";
 
 // @ts-ignore: allowImportingTsExtensions
 import Token, { TokenLocation } from "../lexer/Token.ts";
@@ -162,7 +168,7 @@ export class FunctionDeclarationStatement extends Statement {
 	}
 
 	execute(interpreter: Interpreter) {
-		const _function = new _Function(this.body);
+		const _function = new _Function(this.body, this.args);
 		interpreter.scope().functions().set(this.id.name, _function);
 	}
 
@@ -437,8 +443,18 @@ export class CallExpression extends Expression {
 			throw new TypeError(name + " is not a function");
 		}
 
-		const _function = interpreter.scope().functions().get(name);
-		return _function!.body.execute(interpreter);
+		const _function = interpreter.scope().functions().get(name)!;
+
+		interpreter.enter_scope(new Scope());
+		const scope = interpreter.scope();
+		for (let i = 0; i < _function.args.length; ++i) {
+			const arg = _function.args[i];
+			scope.variables().set(arg.id.name, this.args[i]);
+		}
+		let value = _function!.body.execute(interpreter);
+		interpreter.exit_scope();
+
+		return value;
 	}
 
 	override class_name() {

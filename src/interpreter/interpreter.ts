@@ -1,5 +1,5 @@
 // @ts-ignore: allowImportingTsExtensions
-import { ScopeBlock } from "../parser/ast.ts";
+import { FunctionArgument, ScopeBlock } from "../parser/ast.ts";
 
 export class Scope {
 	private _functions: Map<string, _Function>;
@@ -23,16 +23,19 @@ export class Value {
 }
 
 export class _Function {
-	constructor(public readonly body: ScopeBlock) {}
+	constructor(
+		public readonly body: ScopeBlock,
+		public readonly args: FunctionArgument[],
+	) {}
 }
 
 export class Interpreter {
-	private _scope: Scope;
+	private _scope_stack: Scope[];
 
 	private has_hit_debugger: boolean;
 
 	constructor() {
-		this._scope = new Scope();
+		this._scope_stack = [new Scope()];
 	}
 
 	halt() {
@@ -44,14 +47,22 @@ export class Interpreter {
 	}
 
 	scope() {
-		return this._scope;
+		return this._scope_stack[this._scope_stack.length - 1];
 	}
 
-	enter_scope(scope) {
-		/// todo
+	global_scope() {
+		return this._scope_stack[0];
 	}
 
-	exit_scope(scope) {
-		/// todo
+	enter_scope(scope: Scope) {
+		this._scope_stack.push(scope);
+	}
+
+	exit_scope(): Scope | null {
+		if (this._scope_stack.length == 1)
+			throw new Error(
+				"bro why you trying to get rid of the global scope???",
+			);
+		return this._scope_stack.pop()!;
 	}
 }
