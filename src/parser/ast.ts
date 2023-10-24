@@ -52,7 +52,7 @@ export class DebuggerStatement extends Statement {
 	}
 
 	execute(interpreter: Interpreter) {
-		console.error("todo: implement execute for " + this.class_name());
+		interpreter.halt();
 	}
 
 	override class_name() {
@@ -103,7 +103,10 @@ export class ScopeBlock extends Node {
 
 	execute(interpreter: Interpreter) {
 		let last_value;
-		for (const block of this.body) last_value = block.execute(interpreter);
+		for (const block of this.body) {
+			if (interpreter.has_halted()) return undefined;
+			last_value = block.execute(interpreter);
+		}
 		return last_value;
 	}
 
@@ -160,7 +163,7 @@ export class FunctionDeclarationStatement extends Statement {
 
 	execute(interpreter: Interpreter) {
 		const _function = new _Function(this.body);
-		interpreter.functions().set(this.id.name, _function);
+		interpreter.scope().functions().set(this.id.name, _function);
 	}
 
 	override class_name() {
@@ -189,7 +192,7 @@ export class VariableDeclarationStatement extends Statement {
 		for (const decl of this.declarations) {
 			const id = decl.id.name;
 			let value = decl.init ? decl.init.execute(interpreter) : undefined;
-			interpreter.variables().set(id!, new Value(value));
+			interpreter.scope().variables().set(id!, new Value(value));
 		}
 		return undefined;
 	}
@@ -259,8 +262,8 @@ export class Identifier extends Expression {
 	}
 
 	execute(interpreter: Interpreter) {
-		if (interpreter.variables().has(this.name))
-			return interpreter.variables().get(this.name)!.value;
+		if (interpreter.scope().variables().has(this.name))
+			return interpreter.scope().variables().get(this.name)!.value;
 		return undefined;
 	}
 
@@ -319,7 +322,7 @@ export class MemberExpression extends Expression {
 
 export class AssignmentExpression extends Expression {
 	constructor(
-		public readonly left: Identifier | Expression,
+		public readonly left: Identifier,
 		public readonly right: Expression,
 		public readonly location: TokenLocation,
 	) {
@@ -327,7 +330,10 @@ export class AssignmentExpression extends Expression {
 	}
 
 	execute(interpreter: Interpreter) {
-		console.error("todo: implement execute for " + this.class_name());
+		const id = this.left.name;
+		const value = this.right.execute(interpreter);
+		interpreter.scope().variables().set(id!, new Value(value));
+		return undefined;
 	}
 
 	override class_name() {
@@ -427,11 +433,11 @@ export class CallExpression extends Expression {
 		if (!(this.callee instanceof Identifier)) throw -1;
 
 		const name = this.callee.name;
-		if (!interpreter.functions().has(name)) {
+		if (!interpreter.scope().functions().has(name)) {
 			throw new TypeError(name + " is not a function");
 		}
 
-		const _function = interpreter.functions().get(name);
+		const _function = interpreter.scope().functions().get(name);
 		return _function!.body.execute(interpreter);
 	}
 

@@ -403,7 +403,7 @@ export default class Parser {
 	}
 
 	private parse_assignment_expression(left?: Expression): Expression | null {
-		left = left ?? this.parse_expression()!;
+		left = left ?? this.parse_identifier()!;
 		if (!left) {
 			console.error(
 				"[Parser::parse_variable_assignment] Expected left expr",
@@ -428,7 +428,11 @@ export default class Parser {
 		}
 
 		this.consume(TokenType.Semicolon);
-		return new AssignmentExpression(left, right, equals.location);
+		return new AssignmentExpression(
+			left as Identifier,
+			right,
+			equals.location,
+		);
 	}
 
 	private parse_binary_expression(lhs: Expression): BinaryExpression | null {
