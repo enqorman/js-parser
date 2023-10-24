@@ -1,5 +1,8 @@
-function main(a, b) {
-    return a + b;
+let x = 5;
+
+// CURRENTLY: no scopes so dont try any function arguments lol
+function xbc() {
+    return x + 3;
 }
 
-main(12, 13);
+xbc();

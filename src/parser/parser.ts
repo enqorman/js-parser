@@ -22,10 +22,10 @@ import {
 	FunctionDeclarationStatement,
 	BinaryExpression,
 	// @ts-ignore: allowImportingTsExtensions
-} from "./Types.ts";
+} from "./ast.ts";
 
 // @ts-ignore: allowImportingTsExtensions
-import Token from "../lexer/Token.ts";
+import Token, { TokenLocation } from "../lexer/Token.ts";
 
 // @ts-ignore: allowImportingTsExtensions
 import { TokenType } from "../lexer/Token.ts";
@@ -590,7 +590,7 @@ export default class Parser {
 		}
 
 		this.consume(TokenType.Semicolon);
-		return new CallExpression(callee, args, oparen.location);
+		return new CallExpression(callee as any, args, oparen.location);
 	}
 
 	private parse_if_statement(): IfStatement | null {
