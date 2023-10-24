@@ -46,7 +46,7 @@ function run(file_path: string, src: string, args: ArgumentsParser) {
 	}
 
 	const interpreter = new Interpreter();
-	console.log(program.execute(interpreter));
+	console.log(program.execute(interpreter).value);
 }
 
 export let DEBUG_MODE = false;

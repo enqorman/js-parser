@@ -14,8 +14,9 @@ import {
 import Token, { TokenLocation } from "../lexer/Token.ts";
 
 export class Node {
-	execute(interpreter: Interpreter) {
+	execute(interpreter: Interpreter): Value {
 		console.error("todo: implement execute for " + this.class_name());
+		return Value.of(undefined);
 	}
 
 	class_name() {
@@ -29,8 +30,9 @@ export class Statement extends Node {
 		super();
 	}
 
-	execute(interpreter: Interpreter) {
+	execute(interpreter: Interpreter): Value {
 		console.error("todo: implement execute for " + this.class_name());
+		return Value.of(undefined);
 	}
 
 	override class_name() {
@@ -43,8 +45,9 @@ export class EmptyStatement extends Statement {
 		super(location);
 	}
 
-	execute(interpreter: Interpreter) {
+	execute(interpreter: Interpreter): Value {
 		console.error("todo: implement execute for " + this.class_name());
+		return Value.of(undefined);
 	}
 
 	override class_name() {
@@ -57,8 +60,9 @@ export class DebuggerStatement extends Statement {
 		super(location);
 	}
 
-	execute(interpreter: Interpreter) {
+	execute(interpreter: Interpreter): Value {
 		interpreter.halt();
+		return Value.of(undefined);
 	}
 
 	override class_name() {
@@ -75,8 +79,9 @@ export class IfStatement extends Statement {
 		super(location);
 	}
 
-	execute(interpreter: Interpreter) {
+	execute(interpreter: Interpreter): Value {
 		console.error("todo: implement execute for " + this.class_name());
+		return Value.of(undefined);
 	}
 
 	override class_name() {
@@ -93,8 +98,9 @@ export class WhileStatement extends Statement {
 		super(location);
 	}
 
-	execute(interpreter: Interpreter) {
+	execute(interpreter: Interpreter): Value {
 		console.error("todo: implement execute for " + this.class_name());
+		return Value.of(undefined);
 	}
 
 	override class_name() {
@@ -107,10 +113,10 @@ export class ScopeBlock extends Node {
 		super();
 	}
 
-	execute(interpreter: Interpreter) {
-		let last_value;
+	execute(interpreter: Interpreter): Value {
+		let last_value: Value = Value.of(undefined);
 		for (const block of this.body) {
-			if (interpreter.has_halted()) return undefined;
+			if (interpreter.has_halted()) return Value.of(undefined);
 			last_value = block.execute(interpreter);
 		}
 		return last_value;
@@ -139,7 +145,7 @@ export class ExpressionStatement extends Statement {
 		super(location);
 	}
 
-	execute(interpreter: Interpreter) {
+	execute(interpreter: Interpreter): Value {
 		return this.expression.execute(interpreter);
 	}
 
@@ -167,9 +173,10 @@ export class FunctionDeclarationStatement extends Statement {
 		super(location);
 	}
 
-	execute(interpreter: Interpreter) {
+	execute(interpreter: Interpreter): Value {
 		const _function = new _Function(this.body, this.args);
 		interpreter.scope().functions().set(this.id.name, _function);
+		return Value.of(_function);
 	}
 
 	override class_name() {
@@ -194,13 +201,13 @@ export class VariableDeclarationStatement extends Statement {
 		super(location);
 	}
 
-	execute(interpreter: Interpreter) {
+	execute(interpreter: Interpreter): Value {
 		for (const decl of this.declarations) {
 			const id = decl.id.name;
 			let value = decl.init ? decl.init.execute(interpreter) : undefined;
-			interpreter.scope().variables().set(id!, new Value(value));
+			interpreter.scope().variables().set(id!, Value.of(value));
 		}
-		return undefined;
+		return Value.of(undefined);
 	}
 
 	override class_name() {
@@ -218,8 +225,9 @@ export class ArrayStatement extends Statement {
 		super(location);
 	}
 
-	execute(interpreter: Interpreter) {
+	execute(interpreter: Interpreter): Value {
 		console.error("todo: implement execute for " + this.class_name());
+		return Value.of(undefined);
 	}
 
 	override class_name() {
@@ -235,8 +243,9 @@ export class ReturnStatement extends Statement {
 		super(location);
 	}
 
-	execute(interpreter: Interpreter) {
-		return this.argument?.execute(interpreter);
+	execute(interpreter: Interpreter): Value {
+		if (!this.argument) return Value.of(undefined);
+		return this.argument.execute(interpreter);
 	}
 
 	override class_name() {
@@ -250,8 +259,9 @@ export class Expression extends Node {
 		super();
 	}
 
-	execute(interpreter: Interpreter) {
+	execute(interpreter: Interpreter): Value {
 		console.error("todo: implement execute for " + this.class_name());
+		return Value.of(undefined);
 	}
 
 	override class_name() {
@@ -267,10 +277,10 @@ export class Identifier extends Expression {
 		super(location);
 	}
 
-	execute(interpreter: Interpreter) {
+	execute(interpreter: Interpreter): Value {
 		if (interpreter.scope().variables().has(this.name))
-			return interpreter.scope().variables().get(this.name)!.value;
-		return undefined;
+			return interpreter.scope().variables().get(this.name)!;
+		return Value.of(undefined);
 	}
 
 	override class_name() {
@@ -287,8 +297,8 @@ export class Literal extends Expression {
 		super(location);
 	}
 
-	execute(interpreter: Interpreter) {
-		return this.value;
+	execute(interpreter: Interpreter): Value {
+		return Value.of(this.value);
 	}
 
 	override class_name() {
@@ -297,8 +307,9 @@ export class Literal extends Expression {
 }
 
 export class ChainExpression extends Expression {
-	execute(interpreter: Interpreter) {
+	execute(interpreter: Interpreter): Value {
 		console.error("todo: implement execute for " + this.class_name());
+		return Value.of(undefined);
 	}
 
 	override class_name() {
@@ -317,8 +328,9 @@ export class MemberExpression extends Expression {
 		super(location);
 	}
 
-	execute(interpreter: Interpreter) {
+	execute(interpreter: Interpreter): Value {
 		console.error("todo: implement execute for " + this.class_name());
+		return Value.of(undefined);
 	}
 
 	override class_name() {
@@ -335,11 +347,11 @@ export class AssignmentExpression extends Expression {
 		super(location);
 	}
 
-	execute(interpreter: Interpreter) {
+	execute(interpreter: Interpreter): Value {
 		const id = this.left.name;
 		const value = this.right.execute(interpreter);
-		interpreter.scope().variables().set(id!, new Value(value));
-		return undefined;
+		interpreter.scope().variables().set(id!, Value.of(value));
+		return Value.of(undefined);
 	}
 
 	override class_name() {
@@ -355,8 +367,9 @@ export class ArrayExpression extends Expression {
 		super(location);
 	}
 
-	execute(interpreter: Interpreter) {
+	execute(interpreter: Interpreter): Value {
 		console.error("todo: implement execute for " + this.class_name());
+		return Value.of(undefined);
 	}
 
 	override class_name() {
@@ -383,8 +396,9 @@ export class ObjectExpression extends Expression {
 		super(location);
 	}
 
-	execute(interpreter: Interpreter) {
+	execute(interpreter: Interpreter): Value {
 		console.error("todo: implement execute for " + this.class_name());
+		return Value.of(undefined);
 	}
 
 	override class_name() {
@@ -402,20 +416,20 @@ export class BinaryExpression extends Expression {
 		super(location);
 	}
 
-	execute(interpreter: Interpreter) {
+	execute(interpreter: Interpreter): Value {
 		const lhs = this.lhs.execute(interpreter);
 		const rhs = this.rhs.execute(interpreter);
 		switch (this.op.raw) {
 			case "+":
-				return lhs! + rhs!;
+				return Value.of(lhs.value + rhs.value);
 			case "-":
-				return lhs! - rhs!;
+				return Value.of(lhs.value - rhs.value);
 			case "/":
-				return lhs! / rhs!;
+				return Value.of(lhs.value / rhs.value);
 			case "*":
-				return lhs! * rhs!;
+				return Value.of(lhs.value * rhs.value);
 			case "%":
-				return lhs! % rhs!;
+				return Value.of(lhs.value % rhs.value);
 			default:
 				throw new Error("unknown binary operation");
 		}
@@ -435,23 +449,23 @@ export class CallExpression extends Expression {
 		super(location);
 	}
 
-	execute(interpreter: Interpreter) {
+	execute(interpreter: Interpreter): Value {
 		if (!(this.callee instanceof Identifier)) throw -1;
 
 		const name = this.callee.name;
-		if (!interpreter.scope().functions().has(name)) {
+		if (!interpreter.scope().functions().has(name))
 			throw new TypeError(name + " is not a function");
-		}
-
 		const _function = interpreter.scope().functions().get(name)!;
 
 		interpreter.enter_scope(new Scope());
 		const scope = interpreter.scope();
 		for (let i = 0; i < _function.args.length; ++i) {
+			if (this.args.length == 0) break;
 			const arg = _function.args[i];
-			scope.variables().set(arg.id.name, this.args[i]);
+			const arg_value = this.args[i].execute(interpreter);
+			scope.variables().set(arg.id.name, Value.of(arg_value));
 		}
-		let value = _function!.body.execute(interpreter);
+		const value = _function!.body.execute(interpreter);
 		interpreter.exit_scope();
 
 		return value;

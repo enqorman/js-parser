@@ -18,15 +18,60 @@ export class Scope {
 	}
 }
 
-export class Value {
-	constructor(public readonly value: any) {}
-}
-
 export class _Function {
 	constructor(
 		public readonly body: ScopeBlock,
 		public readonly args: FunctionArgument[],
 	) {}
+}
+
+export class _Object {}
+
+export enum ValueType {
+	UNDEFINED,
+	NULL,
+	NUMBER,
+	BOOLEAN,
+	STRING,
+	OBJECT,
+	FUNCTION,
+}
+
+export class Value {
+	constructor(public readonly type: ValueType, public readonly value: any) {}
+
+	static of(
+		data?:
+			| undefined
+			| null
+			| number
+			| boolean
+			| string
+			| _Object
+			| _Function,
+	): Value {
+		const type = typeof data;
+		switch (type) {
+			case "undefined":
+				return new Value(ValueType.UNDEFINED, undefined);
+			case "number":
+				return new Value(ValueType.NUMBER, data as number);
+			case "boolean":
+				return new Value(ValueType.STRING, data as boolean);
+			case "string":
+				return new Value(ValueType.STRING, data as string);
+			// todo: _Object, _Function
+			default: {
+				if (data == null) return new Value(ValueType.NULL, null);
+				else if (data instanceof _Function)
+					return new Value(ValueType.FUNCTION, data);
+				else if (data instanceof _Object)
+					return new Value(ValueType.OBJECT, data);
+				else if ((data as any) instanceof Value) return data as any;
+				throw new Error("TODO: value from raw of " + type);
+			}
+		}
+	}
 }
 
 export class Interpreter {
